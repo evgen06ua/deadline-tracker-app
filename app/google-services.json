@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "249921242677",
+    "project_id": "deadlinetracker-3094f",
+    "storage_bucket": "deadlinetracker-3094f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:249921242677:android:9de66b3a97be3e54d7137c",
+        "android_client_info": {
+          "package_name": "com.lebediev.deadlinetracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDltoOrnqy87RVj1qbywrZDCrHuxTHAPFw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
