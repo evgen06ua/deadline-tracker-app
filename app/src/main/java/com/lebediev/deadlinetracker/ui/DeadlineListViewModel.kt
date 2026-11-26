@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.lebediev.deadlinetracker.data.DeadlineRepository
 import com.lebediev.deadlinetracker.data.FirestoreDeadlineRepository
 import com.lebediev.deadlinetracker.data.model.Deadline
+import com.lebediev.deadlinetracker.logic.DeadlineFilter
 import com.lebediev.deadlinetracker.logic.DeadlineStats
 import com.lebediev.deadlinetracker.logic.DeadlineStatsCalculator
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +18,8 @@ import java.util.Date
 
 data class ListUiState(
     val deadlines: List<Deadline> = emptyList(),
+    val allCount: Int = 0,
+    val query: String = "",
     val stats: DeadlineStats = DeadlineStats(),
     val isLoading: Boolean = true,
     val error: String? = null
@@ -29,6 +32,8 @@ class DeadlineListViewModel(
     private val _state = MutableStateFlow(ListUiState())
     val state: StateFlow<ListUiState> = _state.asStateFlow()
 
+    private var all: List<Deadline> = emptyList()
+
     init {
         viewModelScope.launch {
             repo.observeMyDeadlines()
@@ -36,17 +41,27 @@ class DeadlineListViewModel(
                     _state.update { s -> s.copy(isLoading = false, error = "Could not load deadlines") }
                 }
                 .collect { list ->
-                    val sorted = list.sortedBy { d -> d.dueDate }
-                    _state.update { s ->
-                        s.copy(
-                            deadlines = sorted,
-                            stats = DeadlineStatsCalculator.compute(sorted, Date()),
-                            isLoading = false,
-                            error = null
-                        )
-                    }
+                    all = list.sortedBy { d -> d.dueDate }
+                    _state.update { s -> s.copy(isLoading = false, error = null) }
+                    publish()
                 }
         }
+    }
+
+    private fun publish() {
+        val shown = DeadlineFilter.search(all, _state.value.query)
+        _state.update { s ->
+            s.copy(
+                deadlines = shown,
+                allCount = all.size,
+                stats = DeadlineStatsCalculator.compute(all, Date())
+            )
+        }
+    }
+
+    fun onQuery(value: String) {
+        _state.update { s -> s.copy(query = value) }
+        publish()
     }
 
     fun delete(id: String, onResult: (Boolean) -> Unit) {
