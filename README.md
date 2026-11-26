@@ -29,14 +29,27 @@ Later: filter by course, reminders, file attachments.
 
 ## Data model (Cloud Firestore)
 
-| Collection | Fields (type) |
-|---|---|
-| users | uid (doc id), email (string), displayName (string), createdAt (timestamp) |
-| courses | ownerId (string), name (string), code (string), createdAt (timestamp) |
-| deadlines | ownerId (string), courseId (string), title (string), dueDate (timestamp), priority (string), isDone (boolean), createdAt (timestamp) |
+Main collection: deadlines
 
-`ownerId` links a document to the user who owns it.
+| Field | Type | Set by |
+|---|---|---|
+| ownerId | string | app (from the login) |
+| courseId | string | user (picked from the list) |
+| courseName | string | app (copied from the course) |
+| title | string | user |
+| dueDate | timestamp | user |
+| priority | string | user |
+| done | boolean | user |
+| createdAt | timestamp | server |
+| updatedAt | timestamp | server |
 
+Reference collection: courses (read only)
+
+| Field | Type | Set by |
+|---|---|---|
+| name | string | admin in the console |
+| code | string | admin in the console |
+| ects | number | admin in the console |
 ## Architecture
 
 ```mermaid
