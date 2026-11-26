@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.lebediev.deadlinetracker.data.model.Deadline
 import kotlinx.coroutines.launch
@@ -63,6 +64,13 @@ fun DeadlineListScreen(
                     },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
                 )
+                Row(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(checked = state.hideDone, onCheckedChange = vm::onHideDone)
+                    Text("Hide done")
+                }
             }
             Box(Modifier.weight(1f).fillMaxWidth()) {
                 if (state.isLoading) {
@@ -75,7 +83,7 @@ fun DeadlineListScreen(
                     )
                 } else if (state.deadlines.isEmpty()) {
                     Text(
-                        if (state.allCount > 0) "No deadlines match your search."
+                        if (state.allCount > 0) "Nothing to show. Change the search or the filter."
                         else "No deadlines yet. Tap Add to create the first one.",
                         modifier = Modifier.align(Alignment.Center).padding(16.dp)
                     )
@@ -88,6 +96,13 @@ fun DeadlineListScreen(
                             DeadlineRow(
                                 d = d,
                                 onClick = { onOpen(d.id) },
+                                onToggle = {
+                                    vm.toggleDone(d) { ok ->
+                                        if (!ok) {
+                                            scope.launch { snackbar.showSnackbar("Could not update") }
+                                        }
+                                    }
+                                },
                                 onDelete = { toDelete = d }
                             )
                             Spacer(Modifier.height(8.dp))
@@ -122,19 +137,33 @@ fun DeadlineListScreen(
 }
 
 @Composable
-private fun DeadlineRow(d: Deadline, onClick: () -> Unit, onDelete: () -> Unit) {
+private fun DeadlineRow(
+    d: Deadline,
+    onClick: () -> Unit,
+    onToggle: () -> Unit,
+    onDelete: () -> Unit
+) {
+    val textColor = if (d.done) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurface
     Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(Modifier.weight(1f)) {
-                Text(d.title, style = MaterialTheme.typography.titleMedium)
-                Text("Course: ${d.courseName}")
-                Text("Due: ${formatDate(d.dueDate)}")
-                Text("Priority: ${d.priority}")
+                Text(
+                    d.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = textColor,
+                    textDecoration = if (d.done) TextDecoration.LineThrough else null
+                )
+                Text("Course: ${d.courseName}", color = textColor)
+                Text("Due: ${formatDate(d.dueDate)}", color = textColor)
+                Text("Priority: ${d.priority}", color = textColor)
             }
-            TextButton(onClick = onDelete) { Text("Delete") }
+            Column(horizontalAlignment = Alignment.End) {
+                TextButton(onClick = onToggle) { Text(if (d.done) "Undo" else "Done") }
+                TextButton(onClick = onDelete) { Text("Delete") }
+            }
         }
     }
 }
