@@ -5,6 +5,18 @@ Students lose track of deadlines spread across many courses, and DeadlineTracker
 ## Team
 Solo team: Yevhenii Lebediev (58798), who holds all roles (Product Owner, Tech Lead, Developer, QA/DevOps).
 
+## Definition of Done
+A story is done when it is merged to main through a reviewed PR and works on a second device. It must not crash on wrong input. Its issue must be closed.
+
+## Tech stack
+| Part | Technology |
+|---|---|
+| App framework | Kotlin with Jetpack Compose |
+| Backend | Firebase |
+| Database | Cloud Firestore in an EU region |
+| Auth | Firebase Authentication with email and password |
+| Test tools | JUnit (Lab 3) |
+
 ## MVP features
 Sprint 1:
 - Register and log in with email and password
