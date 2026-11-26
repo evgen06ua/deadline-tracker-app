@@ -1,36 +1,11 @@
 package com.lebediev.deadlinetracker.ui
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -69,32 +44,41 @@ fun DeadlineListScreen(
         },
         snackbarHost = { SnackbarHost(snackbar) }
     ) { padding ->
-        Box(Modifier.padding(padding).fillMaxSize()) {
-            if (state.isLoading) {
-                CircularProgressIndicator(Modifier.align(Alignment.Center))
-            } else if (error != null) {
+        Column(Modifier.padding(padding).fillMaxSize()) {
+            if (!state.isLoading && error == null) {
                 Text(
-                    error,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.align(Alignment.Center).padding(16.dp)
+                    "${state.stats.upcoming} upcoming | ${state.stats.overdue} overdue | ${state.stats.done} done",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(16.dp)
                 )
-            } else if (state.deadlines.isEmpty()) {
-                Text(
-                    "No deadlines yet. Tap Add to create the first one.",
-                    modifier = Modifier.align(Alignment.Center).padding(16.dp)
-                )
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(state.deadlines, key = { it.id }) { d ->
-                        DeadlineRow(
-                            d = d,
-                            onClick = { onOpen(d.id) },
-                            onDelete = { toDelete = d }
-                        )
-                        Spacer(Modifier.height(8.dp))
+            }
+            Box(Modifier.weight(1f).fillMaxWidth()) {
+                if (state.isLoading) {
+                    CircularProgressIndicator(Modifier.align(Alignment.Center))
+                } else if (error != null) {
+                    Text(
+                        error,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.align(Alignment.Center).padding(16.dp)
+                    )
+                } else if (state.deadlines.isEmpty()) {
+                    Text(
+                        "No deadlines yet. Tap Add to create the first one.",
+                        modifier = Modifier.align(Alignment.Center).padding(16.dp)
+                    )
+                } else {
+                    LazyColumn(
+                        contentPadding = PaddingValues(16.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(state.deadlines, key = { it.id }) { d ->
+                            DeadlineRow(
+                                d = d,
+                                onClick = { onOpen(d.id) },
+                                onDelete = { toDelete = d }
+                            )
+                            Spacer(Modifier.height(8.dp))
+                        }
                     }
                 }
             }
