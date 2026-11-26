@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(data) {
+      return signedIn() && data.ownerId == request.auth.uid;
+    }
+
+    function validDeadline(data) {
+      return data.keys().hasAll(['ownerId', 'courseId', 'courseName', 'title', 'dueDate', 'priority', 'done', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['ownerId', 'courseId', 'courseName', 'title', 'dueDate', 'priority', 'done', 'createdAt', 'updatedAt'])
+        && data.ownerId is string
+        && data.courseId is string && data.courseId.size() > 0
+        && data.courseName is string
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 100
+        && data.dueDate is timestamp
+        && data.priority in ['low', 'medium', 'high']
+        && data.done is bool
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp
+        && (data.done == true || data.dueDate > request.time);
+    }
+
+    match /deadlines/{id} {
+      allow read, delete: if isOwner(resource.data);
+
+      allow create: if isOwner(request.resource.data)
+        && validDeadline(request.resource.data)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+
+      allow update: if isOwner(resource.data)
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time
+        && validDeadline(request.resource.data);
+    }
+
+    match /courses/{id} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+  }
+}
