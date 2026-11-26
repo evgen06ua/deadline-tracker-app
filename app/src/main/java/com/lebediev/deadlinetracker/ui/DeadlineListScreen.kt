@@ -51,6 +51,18 @@ fun DeadlineListScreen(
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(16.dp)
                 )
+                OutlinedTextField(
+                    value = state.query,
+                    onValueChange = vm::onQuery,
+                    label = { Text("Search by title or course") },
+                    singleLine = true,
+                    trailingIcon = {
+                        if (state.query.isNotEmpty()) {
+                            TextButton(onClick = { vm.onQuery("") }) { Text("Clear") }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                )
             }
             Box(Modifier.weight(1f).fillMaxWidth()) {
                 if (state.isLoading) {
@@ -63,7 +75,8 @@ fun DeadlineListScreen(
                     )
                 } else if (state.deadlines.isEmpty()) {
                     Text(
-                        "No deadlines yet. Tap Add to create the first one.",
+                        if (state.allCount > 0) "No deadlines match your search."
+                        else "No deadlines yet. Tap Add to create the first one.",
                         modifier = Modifier.align(Alignment.Center).padding(16.dp)
                     )
                 } else {
